@@ -474,7 +474,7 @@ function ContactBody() {
 }
 
 /* ------------------------------ Window shell ------------------------------ */
-function Win({ win, active, onClose, onFocus, onDragStart }) {
+function Win({ win, active, onClose, onMinimize, onFocus, onDragStart }) {
   return (
     <div onPointerDown={() => onFocus(win.id)}
       style={{ position: "absolute", left: win.x, top: win.y, width: win.w, maxWidth: "calc(100vw - 16px)", zIndex: win.z, background: "#fff", border: "3px solid #000", boxShadow: active ? "8px 8px 0 #000" : "4px 4px 0 rgba(0,0,0,0.45)" }}>
@@ -485,7 +485,7 @@ function Win({ win, active, onClose, onFocus, onDragStart }) {
           <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{win.title}</span>
         </span>
         <span style={{ display: "flex", gap: 6 }}>
-          <button className="nb-ctrl" tabIndex={-1}><Minus size={13} strokeWidth={3} /></button>
+          <button className="nb-ctrl" tabIndex={-1} onPointerDown={(e) => e.stopPropagation()} onClick={() => onMinimize(win.id)}><Minus size={13} strokeWidth={3} /></button>
           <button className="nb-ctrl" onPointerDown={(e) => e.stopPropagation()} onClick={() => onClose(win.id)}><X size={13} strokeWidth={3} /></button>
         </span>
       </div>
@@ -540,9 +540,13 @@ export default function App() {
     });
   }, [zTop]);
   const close = useCallback((id) => setWindows((ws) => ws.filter((w) => w.id !== id)), []);
+  const minimize = useCallback((id) => {
+    setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, minimized: true } : w)));
+    setActive((a) => (a === id ? null : a));
+  }, []);
   const focus = useCallback((id) => {
     setActive(id);
-    setZTop((z) => { const nz = z + 1; setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, z: nz } : w))); return nz; });
+    setZTop((z) => { const nz = z + 1; setWindows((ws) => ws.map((w) => (w.id === id ? { ...w, z: nz, minimized: false } : w))); return nz; });
   }, []);
 
   const onMove = useCallback((e) => {
@@ -643,7 +647,7 @@ export default function App() {
       </div>
 
       {/* ============================== WINDOWS =========================== */}
-      {windows.map((w) => <Win key={w.id} win={w} active={active === w.id} onClose={close} onFocus={focus} onDragStart={onDragStart} />)}
+      {windows.map((w) => w.minimized ? null : <Win key={w.id} win={w} active={active === w.id} onClose={close} onMinimize={minimize} onFocus={focus} onDragStart={onDragStart} />)}
 
       {/* ============================ START MENU ========================== */}
       {startOpen && (
@@ -670,8 +674,8 @@ export default function App() {
         </button>
         <div style={{ display: "flex", gap: 6, flex: 1, overflow: "hidden" }}>
           {windows.map((w) => (
-            <button key={w.id} className="mono select-none" onClick={() => focus(w.id)}
-              style={{ display: "flex", alignItems: "center", gap: 6, maxWidth: 150, border: "2px solid #000", background: active === w.id ? "#fff" : "#cfcabb", padding: "4px 8px", fontSize: 11, fontWeight: 700, boxShadow: active === w.id ? "2px 2px 0 #000" : "none", cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <button key={w.id} className="mono select-none" onClick={() => (active === w.id && !w.minimized ? minimize(w.id) : focus(w.id))}
+              style={{ display: "flex", alignItems: "center", gap: 6, maxWidth: 150, border: "2px solid #000", background: active === w.id && !w.minimized ? "#fff" : "#cfcabb", padding: "4px 8px", fontSize: 11, fontWeight: 700, boxShadow: active === w.id && !w.minimized ? "2px 2px 0 #000" : "none", cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", opacity: w.minimized ? 0.6 : 1 }}>
               <w.icon size={13} /> {w.title}
             </button>
           ))}
