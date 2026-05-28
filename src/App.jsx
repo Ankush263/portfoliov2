@@ -569,7 +569,8 @@ export default function App() {
         .select-none{user-select:none;-webkit-user-select:none;}
         .nb-btn{transition:none;cursor:pointer;}
         .nb-btn:active{transform:translate(2px,2px);box-shadow:0 0 0 #000 !important;}
-        .nb-ctrl{display:grid;place-items:center;width:20px;height:18px;border:2px solid #000;background:#fff;color:#000;cursor:pointer;}
+        .nb-ctrl{display:inline-grid;place-items:center;width:20px;height:20px;padding:0;line-height:0;border:2px solid #000;background:#fff;color:#000;cursor:pointer;}
+        .nb-ctrl svg{display:block;}
         .nb-ctrl:active{transform:translate(1px,1px);}
         .dicon{cursor:pointer;transition:transform .08s;}
         .dicon:hover{transform:translateY(-2px);}
