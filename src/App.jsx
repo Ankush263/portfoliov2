@@ -6,7 +6,7 @@ import {
   Folder, FileText, TerminalSquare, Briefcase, User, X, Minus, Sparkles,
   Trophy, Award, GitPullRequest, Cpu, ChevronRight,
   Mail, Phone, MapPin, Download, Search, HelpCircle, MessageCircle, Mic,
-  ScanLine, ShoppingCart, ArrowUpRight, Copy,
+  ScanLine, ShoppingCart, ArrowUpRight, Copy, GraduationCap,
 } from "lucide-react";
 
 const Github = ({ size = 16 }) => (
@@ -39,6 +39,10 @@ const PROFILE = {
   linkedin: "https://www.linkedin.com/in/ankush-banik-b61bb6214/",
   twitter: "https://x.com/AnkushBanik8",
 };
+
+/* Google Doc → direct PDF export (downloads instead of opening the editor) */
+const RESUME_DOC_ID = "1umrRyPxD_2AmYVOFr1ev21arWagp8i1dugLewwC7DqE";
+const RESUME_PDF_URL = `https://docs.google.com/document/d/${RESUME_DOC_ID}/export?format=pdf`;
 
 /* paper-grain texture as a data URI (built in JS to avoid encoding headaches) */
 const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
@@ -367,12 +371,13 @@ function TerminalBody() {
     const cmd = raw.trim().toLowerCase();
     const push = (lines) => setHistory((h) => [...h, { t: "cmd", v: `ankush@web-os:~$ ${raw}` }, ...lines.map((v) => ({ t: "out", v }))]);
     if (cmd === "clear") return setHistory([]);
-    if (cmd === "help") return push(["available: skills  aws  whoami  projects  features  social  clear"]);
+    if (cmd === "help") return push(["available: skills  aws  whoami  projects  features  social  resume  clear"]);
     if (cmd === "whoami") return push([`${PROFILE.name} — ${PROFILE.role} (3+ yrs), ${PROFILE.location}`]);
     if (cmd === "projects") return push(PROJECTS.map((p) => `• ${p.name} — ${p.tag}`));
     if (cmd === "features") return push(FEATURES.map((f) => `• ${f.title} (${f.org})`));
     if (cmd === "aws") return push(AWS.map(([n, v]) => `▸ aws-${n.padEnd(13)} ${v}`));
     if (cmd === "social") return push([`github  ${PROFILE.github}`, `linkedin ${PROFILE.linkedin}`, `twitter ${PROFILE.twitter}`]);
+    if (cmd === "resume") { try { window.open(RESUME_PDF_URL, "_blank", "noopener,noreferrer"); } catch (e) {} return push(["downloading Ankush_Banik_Resume.pdf ..."]); }
     if (cmd === "skills") return push([...DEPS, ...DEVOPS.map((d) => [d[0], d[1]]), ...AWS.map(([n, v]) => [`aws-${n}`, v])].map(([n, v]) => `✔ ${String(n).padEnd(16)} ${v}`));
     if (cmd === "") return setHistory((h) => [...h, { t: "cmd", v: "ankush@web-os:~$" }]);
     return push([`command not found: ${cmd} — try 'help'`]);
@@ -408,6 +413,8 @@ function TerminalBody() {
 }
 
 /* ------------------------------ Resume window ----------------------------- */
+/* Retro, fully-rendered résumé. The "Download" button pulls the live Google
+   Doc and exports it as a PDF (so the file always matches the source doc). */
 function Section({ title, children }) {
   return (
     <div style={{ marginTop: 16 }}>
@@ -423,27 +430,148 @@ function ResumeRow({ a, b }) {
     </div>
   );
 }
+function SkillLine({ label, items }) {
+  return (
+    <div style={{ marginBottom: 9 }}>
+      <div className="mono" style={{ fontSize: 11, fontWeight: 700, color: ORANGE, marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+        {items.map((s) => <span key={s} className="mono" style={{ fontSize: 10.5, border: "2px solid #000", padding: "1px 6px", background: "#fff" }}>{s}</span>)}
+      </div>
+    </div>
+  );
+}
+function ResumeJob({ title, sub, when, bullets }) {
+  return (
+    <div style={{ marginBottom: 14, borderLeft: `3px solid ${ORANGE}`, paddingLeft: 11 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "baseline" }}>
+        <span className="display" style={{ fontSize: 14.5 }}>{title}</span>
+        <span className="mono" style={{ color: "#777", fontSize: 11 }}>{when}</span>
+      </div>
+      <div className="mono" style={{ fontSize: 11, color: "#888", marginTop: 2 }}>{sub}</div>
+      <ul style={{ margin: "7px 0 0", paddingLeft: 0, listStyle: "none" }}>
+        {bullets.map((b, i) => (
+          <li key={i} style={{ display: "flex", gap: 7, fontSize: 12.5, lineHeight: 1.55, marginBottom: 4 }}>
+            <span style={{ color: ORANGE, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>▸</span><span>{b}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+const RESUME_SKILLS = [
+  { label: "Languages", items: ["JavaScript", "TypeScript", "Go", "Python", "SQL"] },
+  { label: "Frontend", items: ["React.js", "Next.js", "HTML5", "CSS3", "Tailwind CSS", "Responsive UI"] },
+  { label: "Backend", items: ["Node.js", "Express.js", "REST APIs", "Auth", "Integrations", "Webhooks", "API optimization"] },
+  { label: "Databases & Caching", items: ["PostgreSQL", "MongoDB", "Redis", "Schema design", "Query optimization"] },
+  { label: "Cloud & DevOps", items: ["AWS", "Azure", "Docker", "Kubernetes", "Terraform", "GitHub Actions", "CI/CD", "NGINX", "PM2"] },
+  { label: "AI & Integrations", items: ["GPT-4o", "Gemini", "OCR pipelines", "Meta WhatsApp Business", "Twilio", "Exotel", "Ubona"] },
+];
+const RESUME_JOBS = [
+  { title: "Full-Stack Software Engineer — Circle Health", sub: "Bengaluru, India", when: "May 2024 – Present",
+    bullets: [
+      "Build & maintain healthcare applications for clients across the US, Philippines, and India using React, Node.js, Python, PostgreSQL, AWS, and Azure.",
+      "Designed patient-engagement workflows with the Meta WhatsApp Business chatbot/templates and calling integrations across Exotel, Twilio, and Ubona.",
+      "Integrated Simple healthcare systems to fetch patient records in near real time, improving lookup, clinical operations, and care-program enrollment.",
+      "Developed billing & clinical workflow features using CPT and ICD codes for CCM, BHI, RPM, and CoCM programs.",
+      "Built AI-powered features: wellness reports, fitness tracker, period-cycle tracker, AI health plans, and AI diet charts.",
+      "Improved API performance & reliability by optimizing endpoints, distributing Node.js workloads with PM2, and managing traffic with NGINX.",
+    ] },
+  { title: "Lead Developer — Feed Our World (FOW)", sub: "Remote", when: "Aug 2022 – Apr 2024",
+    bullets: [
+      "Led development for a nonprofit platform focused on reducing food waste by moving food from excess to shortage areas.",
+      "Built FOW FARM on the MERN stack + CELO blockchain, reducing operational expenses by 25%.",
+      "Delivered full-stack features, database-backed APIs, admin workflows, and reporting tools for donation & food-tracking operations.",
+    ] },
+  { title: "Software Developer Intern — Webyapar Solution", sub: "India", when: "2022",
+    bullets: [
+      "Built a custom e-commerce app letting admins create personalised shops from API templates, reducing development cost by 70%.",
+      "Created product-upload & filtering workflows for retailers, improving catalogue management and product discovery.",
+    ] },
+];
+const RESUME_PROJECTS = [
+  { name: "DevStudio", stack: "React · Go · PostgreSQL · Docker · sqlc", blurb: "Interactive coding-education platform with editable playback — learners pause, fork the live codebase, experiment, and resume from the original state." },
+  { name: "WACOMM", stack: "React · Python · Meta API · Gemini 2.5-flash", blurb: "Real-time patient-comms dashboard on WhatsApp — care managers chat with assigned patients, track calls, and generate AI conversation summaries." },
+  { name: "AI Health Report", stack: "Gemini 3.0 Flash · Node.js · AWS S3", blurb: "AI workflow that scans lab reports, extracts structured data, scores wellness, and flags cardiovascular, diabetes, hypertension & liver risks." },
+];
+const RESUME_HIGHLIGHTS = [
+  "Contributed to Lightdash (self-serve BI) and shipped PRs across Ethers.js, create-web3-dapp, and CELO ecosystem repos.",
+  "Impact Award @ Feed Our World for reducing food waste by tracking donations and incentivising movement from excess to shortage areas.",
+  "2nd place — Web3aThon on the CELO chain, among 13 blockchain tracks, for full-stack & blockchain development.",
+];
+
 function ResumeBody() {
+  const download = () => { try { window.open(RESUME_PDF_URL, "_blank", "noopener,noreferrer"); } catch (e) {} };
   return (
     <div>
-      <div className="mono" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#e5e5e5", borderBottom: "2px solid #000", padding: "6px 10px", fontSize: 12 }}>
-        <span>Ankush_Banik_Resume.pdf</span>
-        <button className="nb-btn" onClick={() => { try { window.print(); } catch (e) {} }}
-          style={{ display: "flex", alignItems: "center", gap: 6, background: ORANGE, color: "#fff", border: "2px solid #000", padding: "3px 9px", fontWeight: 700, fontSize: 11, boxShadow: "3px 3px 0 #000" }}>
-          <Download size={13} /> Save
+      {/* title bar with the live download */}
+      <div className="mono" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#e5e5e5", borderBottom: "2px solid #000", padding: "6px 10px", fontSize: 12, gap: 8 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <FileText size={13} /> Ankush_Banik_Resume.pdf
+        </span>
+        <button className="nb-btn" onClick={download}
+          style={{ display: "flex", alignItems: "center", gap: 6, background: ORANGE, color: "#fff", border: "2px solid #000", padding: "3px 9px", fontWeight: 700, fontSize: 11, boxShadow: "3px 3px 0 #000", flexShrink: 0, cursor: "pointer" }}>
+          <Download size={13} /> Download
         </button>
       </div>
+
+      {/* retro résumé body */}
       <div style={{ padding: 18, background: "#fafafa" }}>
-        <h2 className="display" style={{ margin: 0, fontSize: 22 }}>{PROFILE.name}</h2>
-        <div className="mono" style={{ fontSize: 11.5, color: "#555", marginTop: 4 }}>{PROFILE.role} · {PROFILE.location} · {PROFILE.email} · {PROFILE.phone}</div>
-        <Section title="Summary"><p style={{ margin: 0, fontSize: 13, lineHeight: 1.6 }}>Full-Stack Software Engineer with 3+ years building production web apps, backend APIs, third-party integrations, automation, AI/OCR features and cloud-deployed systems across the JS/TS, Go & Python ecosystems with PostgreSQL, MongoDB, Redis, AWS, Azure, Docker, Kubernetes and Terraform.</p></Section>
-        <Section title="Experience">
-          <ResumeRow a="Circle Health — Full-Stack Software Engineer" b="May 2024 – Present" />
-          <ResumeRow a="Feed Our World — Lead Developer" b="Aug 2022 – Apr 2024" />
-          <ResumeRow a="Webyapar Solution — Software Developer Intern" b="2022" />
+        <h2 className="display" style={{ margin: 0, fontSize: 24 }}>{PROFILE.name}</h2>
+        <div className="mono" style={{ display: "inline-block", marginTop: 6, background: ORANGE, color: "#fff", padding: "2px 7px", border: "2px solid #000", fontSize: 11, fontWeight: 700 }}>{PROFILE.role} · AI & Cloud</div>
+        <div className="mono" style={{ fontSize: 11.5, color: "#555", marginTop: 8, lineHeight: 1.7 }}>
+          {PROFILE.location} · {PROFILE.email} · {PROFILE.phone}<br />
+          linkedin.com/in/ankush-banik-b61bb6214 · github.com/Ankush263
+        </div>
+
+        <Section title="Summary">
+          <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6 }}>
+            Full-Stack Software Engineer with 3+ years building production web apps, backend APIs, third-party integrations, automation workflows, AI/OCR features, and cloud-deployed systems across the JS/TS, Go & Python ecosystems with PostgreSQL, MongoDB, Redis, AWS, Azure, Docker, Kubernetes, Terraform, GitHub Actions, NGINX, and PM2. Skilled at owning features end-to-end — data models, API optimization, external-platform integrations, and reliable software for global users.
+          </p>
         </Section>
-        <Section title="Education"><ResumeRow a="B.Sc. (Hons.) Mathematics — University of Calcutta" b="2018 – 2021" /></Section>
-        <Section title="Highlights"><p style={{ margin: 0, fontSize: 13, lineHeight: 1.6 }}>Impact Award @ Feed Our World · 2nd place, Web3aThon (CELO, 13 tracks) · OSS: Lightdash, Ethers.js, create-web3-dapp, CELO.</p></Section>
+
+        <Section title="Core Skills">
+          {RESUME_SKILLS.map((s) => <SkillLine key={s.label} label={s.label} items={s.items} />)}
+        </Section>
+
+        <Section title="Professional Experience">
+          {RESUME_JOBS.map((j) => <ResumeJob key={j.title} {...j} />)}
+        </Section>
+
+        <Section title="Selected Projects">
+          {RESUME_PROJECTS.map((p) => (
+            <div key={p.name} style={{ marginBottom: 11, border: "2px solid #000", background: "#fff", padding: "9px 11px", boxShadow: "3px 3px 0 #000" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "baseline" }}>
+                <span className="display" style={{ fontSize: 14 }}>{p.name}</span>
+                <span className="mono" style={{ fontSize: 10, color: "#888" }}>{p.stack}</span>
+              </div>
+              <p style={{ margin: "5px 0 0", fontSize: 12.5, lineHeight: 1.5 }}>{p.blurb}</p>
+            </div>
+          ))}
+        </Section>
+
+        <Section title="Achievements & Open Source">
+          <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+            {RESUME_HIGHLIGHTS.map((h, i) => (
+              <li key={i} style={{ display: "flex", gap: 7, fontSize: 12.5, lineHeight: 1.55, marginBottom: 5 }}>
+                <Trophy size={13} style={{ flexShrink: 0, marginTop: 2, color: ORANGE }} /><span>{h}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        <Section title="Education">
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <GraduationCap size={15} color={ORANGE} />
+            <ResumeRow a="B.Sc. (Hons.) Mathematics — University of Calcutta" b="2018 – 2021" />
+          </div>
+        </Section>
+
+        {/* footer download (mirrors the title-bar action) */}
+        <button className="nb-btn" onClick={download}
+          style={{ marginTop: 20, width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, background: "#000", color: "#fff", border: "3px solid #000", padding: "11px 14px", fontWeight: 800, fontSize: 13, boxShadow: `4px 4px 0 ${ORANGE}`, fontFamily: "'Bricolage Grotesque',sans-serif", cursor: "pointer" }}>
+          <Download size={15} /> Download PDF résumé
+        </button>
       </div>
     </div>
   );
