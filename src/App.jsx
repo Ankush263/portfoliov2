@@ -6,7 +6,7 @@ import {
   Folder, FileText, TerminalSquare, Briefcase, User, X, Minus, Sparkles,
   Trophy, Award, GitPullRequest, Cpu, ChevronRight,
   Mail, Phone, MapPin, Download, Search, HelpCircle, MessageCircle, Mic,
-  ScanLine, ShoppingCart, ArrowUpRight, Copy, GraduationCap,
+  ScanLine, ShoppingCart, ArrowUpRight, Copy, GraduationCap, Webhook,
 } from "lucide-react";
 
 const Github = ({ size = 16 }) => (
@@ -122,6 +122,19 @@ function IcContact() {
       <rect x="5" y="9" width="30" height="23" rx="3" fill="#fff" stroke="#000" strokeWidth={SW} />
       <path d="M6 11 L20 23 L34 11" fill="none" stroke="#000" strokeWidth={SW} strokeLinejoin="round" />
       <circle cx="31" cy="11" r="5" fill={ORANGE} stroke="#000" strokeWidth="2" />
+    </svg>
+  );
+}
+function IcIntegrations() {
+  return (
+    <svg viewBox="0 0 40 40" width="44" height="44">
+      <line x1="20" y1="20" x2="9" y2="10" stroke="#000" strokeWidth="2.4" />
+      <line x1="20" y1="20" x2="31" y2="11" stroke="#000" strokeWidth="2.4" />
+      <line x1="20" y1="20" x2="20" y2="33" stroke="#000" strokeWidth="2.4" />
+      <circle cx="9" cy="10" r="5" fill="#3B82C4" stroke="#000" strokeWidth={SW} />
+      <circle cx="31" cy="11" r="5" fill="#3DA35D" stroke="#000" strokeWidth={SW} />
+      <circle cx="20" cy="33" r="5" fill="#fff" stroke="#000" strokeWidth={SW} />
+      <circle cx="20" cy="20" r="6.5" fill={ORANGE} stroke="#000" strokeWidth={SW} />
     </svg>
   );
 }
@@ -446,6 +459,62 @@ function FeaturesBody() {
   );
 }
 
+/* --------------------------- Integrations window -------------------------- */
+/* APIs, webhooks & third-party platforms — wired end-to-end, as a core skill. */
+const INTEGRATION_CAPABILITIES = ["REST & GraphQL APIs", "Inbound webhooks", "Signature verification", "OAuth & API keys", "Retries & idempotency", "Rate-limit handling", "Polling & sync jobs", "Event timelines"];
+const INTEGRATIONS = [
+  { group: "Messaging & Telephony", color: ORANGE, items: [
+    { name: "Meta WhatsApp Business", proto: "REST + Webhooks", note: "Inbound-message webhooks, approved templates, the 24-hour session window, and two-way delivery into a care-manager inbox." },
+    { name: "Twilio", proto: "REST + Webhooks", note: "Programmable voice/SMS — outbound calls, status-callback webhooks, and call-recording capture." },
+    { name: "Exotel", proto: "REST + Webhooks", note: "Cloud telephony for patient outreach — click-to-call, routing, and DLT/TRAI-compliant flows." },
+    { name: "Ubona", proto: "REST", note: "Outbound calling at scale, merged into one shared call-tracking timeline." },
+  ] },
+  { group: "Healthcare Systems", color: "#1f9e8e", items: [
+    { name: "Simple EHR", proto: "REST sync", note: "Near real-time patient-record fetch for faster lookup and care-program enrollment." },
+    { name: "CPT / ICD coding", proto: "Standards", note: "Billing & clinical workflows mapped across CCM, BHI, RPM, and CoCM programs." },
+  ] },
+  { group: "AI & Vision", color: "#3B82C4", items: [
+    { name: "Google Gemini", proto: "REST / SDK", note: "Conversation summaries, structured extraction, AI health plans & diet charts." },
+    { name: "OpenAI GPT-4o", proto: "REST / SDK", note: "LLM features behind a provider-agnostic prompt layer." },
+    { name: "OCR pipelines", proto: "Async jobs", note: "Lab-report scanning → structured vitals JSON persisted to S3." },
+  ] },
+  { group: "Cloud & Platform", color: "#9333EA", items: [
+    { name: "AWS (S3, EC2, RDS)", proto: "SDK / IAM", note: "Object storage, compute, and managed Postgres behind IAM-scoped access." },
+    { name: "CELO blockchain", proto: "Web3 RPC", note: "On-chain donation tracking for FOW FARM (MERN + CELO)." },
+  ] },
+];
+function IntegrationsBody() {
+  return (
+    <div style={{ padding: 18, display: "grid", gap: 16 }}>
+      <p className="mono" style={{ margin: 0, fontSize: 12, color: "#555" }}>// integrations are a first-class part of how I build — not a footnote</p>
+      <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>
+        A lot of what I ship lives at the seams between systems: receiving webhooks, calling third-party APIs, and keeping data in sync. I treat the hard parts — signature checks, retries, idempotency, and rate limits — as the actual work, not an afterthought.
+      </p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {INTEGRATION_CAPABILITIES.map((c) => <span key={c} className="mono" style={{ fontSize: 11, border: "2px solid #000", padding: "2px 7px", background: "#000", color: ORANGE }}>{c}</span>)}
+      </div>
+      {INTEGRATIONS.map((g) => (
+        <div key={g.group}>
+          <div className="mono" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#444", marginBottom: 8 }}>
+            <span style={{ width: 11, height: 11, background: g.color, border: "2px solid #000", flexShrink: 0 }} />{g.group}
+          </div>
+          <div style={{ display: "grid", gap: 10 }}>
+            {g.items.map((it) => (
+              <div key={it.name} className="card3d" style={{ border: "3px solid #000", background: "#fff", padding: 12, boxShadow: "4px 4px 0 #000" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 6 }}>
+                  <span className="display" style={{ fontSize: 15 }}>{it.name}</span>
+                  <span className="mono" style={{ fontSize: 10.5, border: "2px solid #000", padding: "1px 6px", background: g.color, color: "#fff" }}>{it.proto}</span>
+                </div>
+                <p style={{ fontSize: 13, lineHeight: 1.5, margin: "6px 0 0" }}>{it.note}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ------------------------------ Terminal window --------------------------- */
 const DEPS = [["go", "^1.22"], ["python", "^3.12"], ["typescript", "^5.4"], ["javascript", "es2023"], ["node", "^20.0"], ["react", "^18.3"], ["next", "^14.0"], ["postgresql", "^16"], ["mongodb", "^7.0"], ["redis", "^7.2"]];
 const AWS = [["ec2", "compute"], ["lambda", "serverless"], ["s3", "storage"], ["rds", "database"], ["iam", "identity"], ["vpc", "networking"], ["sqs", "queue"], ["cloudwatch", "observability"], ["cloudfront", "cdn"], ["route53", "dns"], ["codepipeline", "ci/cd"], ["codebuild", "ci/cd"], ["codedeploy", "ci/cd"]];
@@ -463,10 +532,11 @@ function TerminalBody() {
     const cmd = raw.trim().toLowerCase();
     const push = (lines) => setHistory((h) => [...h, { t: "cmd", v: `ankush@web-os:~$ ${raw}` }, ...lines.map((v) => ({ t: "out", v }))]);
     if (cmd === "clear") return setHistory([]);
-    if (cmd === "help") return push(["available: skills  aws  whoami  projects  features  social  resume  clear"]);
+    if (cmd === "help") return push(["available: skills  aws  whoami  projects  features  integrations  social  resume  clear"]);
     if (cmd === "whoami") return push([`${PROFILE.name} — ${PROFILE.role} (3+ yrs), ${PROFILE.location}`]);
     if (cmd === "projects") return push(PROJECTS.map((p) => `• ${p.name} — ${p.tag}`));
     if (cmd === "features") return push(FEATURES.map((f) => `• ${f.title} (${f.org})`));
+    if (cmd === "integrations") return push(INTEGRATIONS.flatMap((g) => [`# ${g.group}`, ...g.items.map((it) => `  ▸ ${it.name.padEnd(26)} ${it.proto}`)]));
     if (cmd === "aws") return push(AWS.map(([n, v]) => `▸ aws-${n.padEnd(13)} ${v}`));
     if (cmd === "social") return push([`github  ${PROFILE.github}`, `linkedin ${PROFILE.linkedin}`, `twitter ${PROFILE.twitter}`]);
     if (cmd === "resume") { try { window.open(RESUME_PDF_URL, "_blank", "noopener,noreferrer"); } catch (e) {} return push(["downloading Ankush_Banik_Resume.pdf ..."]); }
@@ -721,6 +791,7 @@ const REGISTRY = {
   projects:   { title: "Projects",           icon: Folder,         w: 600, body: <ProjectsBody /> },
   experience: { title: "Experience.log",     icon: Briefcase,      w: 560, body: <ExperienceBody /> },
   features:   { title: "Features.app",       icon: Sparkles,       w: 600, body: <FeaturesBody /> },
+  integrations: { title: "Integrations.api",  icon: Webhook,        w: 600, body: <IntegrationsBody /> },
   terminal:   { title: "skills — terminal",  icon: TerminalSquare, w: 540, body: <TerminalBody /> },
   contact:    { title: "Contact",            icon: Mail,           w: 440, body: <ContactBody /> },
 };
@@ -729,6 +800,7 @@ const DESKTOP_ICONS = [
   { key: "resume", label: "Resume.pdf", Art: IcResume },
   { key: "projects", label: "Projects", Art: IcProjects },
   { key: "features", label: "Features.app", Art: IcFeatures },
+  { key: "integrations", label: "Integrations", Art: IcIntegrations },
   { key: "experience", label: "Experience", Art: IcExperience },
   { key: "terminal", label: "Skills", Art: IcTerminal },
   { key: "contact", label: "Talk to me", Art: IcContact },
@@ -857,7 +929,7 @@ export default function App() {
       <div className="iso-wrap"><IsoScene /></div>
 
       {/* ============================ DESKTOP ICONS ======================= */}
-      <div style={{ position: "absolute", top: 72, left: 14, display: "flex", flexDirection: "column", gap: 16, zIndex: 2 }}>
+      <div style={{ position: "absolute", top: 72, left: 14, display: "flex", flexDirection: "column", flexWrap: "wrap", alignContent: "flex-start", maxHeight: "calc(100vh - 140px)", columnGap: 6, rowGap: 16, zIndex: 2 }}>
         {DESKTOP_ICONS.map(({ key, label, Art }) => (
           <button key={key} className="dicon select-none" onClick={() => open(key)} style={{ background: "transparent", border: "none", display: "flex", flexDirection: "column", alignItems: "center", width: 80, gap: 4 }}>
             <Art />
