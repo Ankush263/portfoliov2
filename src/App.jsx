@@ -845,7 +845,7 @@ export default function App() {
         <span className="mono" style={{ display: "inline-block", background: "#000", color: ORANGE, fontSize: 12, padding: "3px 8px", border: "2px solid #000" }}>● online · open to work</span>
         <h1 className="display" style={{ fontSize: 46, lineHeight: 1.02, margin: "14px 0 0" }}>Hi, I’m Ankush.<br />I build <span style={{ color: ORANGE }}>full-stack</span><br />+ AI products.</h1>
         <p style={{ fontSize: 15.5, lineHeight: 1.55, marginTop: 14, maxWidth: 400, color: "#2a2a2a" }}>
-          I&apos;m a full-stack engineer who loves turning messy problems into clean products. For 3+ years I&apos;ve been shipping healthcare AI &amp; cloud systems — web apps, APIs, and AI/OCR magic in JS/TS, Go &amp; Python.
+          I build full-stack SaaS products, APIs, and automation workflows for healthcare, communications, and data-heavy products. For 3+ years I&apos;ve shipped these systems end-to-end in JS/TS, Go &amp; Python on AWS &amp; Azure.
         </p>
         <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
           <button className="nb-btn" onClick={() => open("projects")} style={{ background: "#000", color: "#fff", border: "3px solid #000", padding: "10px 16px", fontWeight: 800, boxShadow: "4px 4px 0 " + ORANGE, fontFamily: "'Bricolage Grotesque',sans-serif" }}>View my work →</button>
