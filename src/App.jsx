@@ -285,31 +285,123 @@ function ExperienceBody() {
   );
 }
 
+/* Featured projects, written as case studies:
+   Problem → Stack → Architecture → Challenges → What shipped → Outcome. */
 const PROJECTS = [
-  { name: "DevStudio", tag: "Interactive coding platform", stack: ["Go", "React", "PostgreSQL", "Docker", "sqlc"],
-    blurb: "Editable playback for coding screencasts — learners pause, fork the live codebase, experiment, then resume from the original state.",
-    lang: "session.go", code: ["func (h *Hub) Replay(s *Session) error {", "    for _, op := range s.Ops {", "        h.broadcast(op)      // emit edit", "        time.Sleep(op.Delay) // keep timing", "    }", "    return nil", "}"] },
-  { name: "WACOMM", tag: "WhatsApp AI dashboard", stack: ["React", "Python", "Meta API", "Gemini 2.5"],
-    blurb: "Real-time patient comms on the Meta API — care managers chat with assigned patients, track calls, and get AI conversation summaries.",
-    lang: "summarize.py", code: ["@app.post('/summarize')", "async def summarize(chat: Chat):", "    msgs = await db.fetch(chat.id)", "    out  = gemini.generate(PROMPT, msgs)", "    return { 'summary': out.text }"] },
-  { name: "AI Health Report", tag: "OCR / LLM workflow", stack: ["Gemini", "Node.js", "AWS S3"],
-    blurb: "Scans lab reports, extracts structured health data, computes wellness scores, and flags cardiovascular, diabetes, hypertension & liver risks.",
-    lang: "report.ts", code: ["const data  = await ocr.extract(buffer);", "const risks = scoreVitals(data); // CVD, T2D, HTN", "await s3.put(`reports/${id}.json`, data);", "return { wellness: risks.score, risks };"] },
+  {
+    name: "DevStudio", tag: "Interactive coding platform",
+    stack: ["Go", "React", "PostgreSQL", "Docker", "sqlc"],
+    problem: "Coding screencasts are passive — learners watch someone type but can't touch the code on screen. They can't pause at a tricky moment, edit the exact state being shown, and run it, so the lesson never moves from the instructor's keyboard to theirs.",
+    architecture: "A Go WebSocket hub replays recorded edit operations with their original timing into a browser-based editor. Sessions and their op-logs are persisted in PostgreSQL through sqlc-generated, type-safe queries. When a learner forks, the live buffer branches off the recorded timeline into a Docker-sandboxed workspace where their code runs in isolation — the original op-stream stays untouched, so resume restores the exact pre-fork state.",
+    challenges: [
+      "Keeping replay timing faithful while letting a learner fork and diverge mid-stream.",
+      "Running untrusted, learner-authored code safely — solved with per-session Docker sandboxes.",
+      "Reconciling a forked, edited buffer back to the original recorded state on resume.",
+    ],
+    shipped: [
+      "Editable playback of coding screencasts with original keystroke timing.",
+      "Fork-and-experiment: branch the live codebase, run it, then resume cleanly.",
+      "Session + op-log persistence via sqlc-typed PostgreSQL queries.",
+    ],
+    outcome: "Turned watch-only screencasts into a hands-on playground — learners interact with the exact code state instead of pausing to retype it.",
+    lang: "session.go", code: ["func (h *Hub) Replay(s *Session) error {", "    for _, op := range s.Ops {", "        h.broadcast(op)      // emit edit", "        time.Sleep(op.Delay) // keep timing", "    }", "    return nil", "}"],
+  },
+  {
+    name: "WACOMM", tag: "WhatsApp AI dashboard",
+    stack: ["React", "Python", "Meta API", "Gemini 2.5", "PostgreSQL"],
+    problem: "Care managers handled patient conversations across WhatsApp and phone with no shared view. Long, multilingual threads made it slow to recall a patient's history before a call, and nothing tied messages and call logs to the right care manager.",
+    architecture: "Meta WhatsApp Business webhooks feed a Python service that persists messages to PostgreSQL and fans them out to a React inbox in real time. Patients are assigned to care managers, and call logs from Exotel / Twilio merge into the same timeline. On demand, Gemini 2.5 summarizes a full thread so a care manager can prep in seconds.",
+    challenges: [
+      "Real-time inbound fan-out so a new patient message lands in the right inbox instantly.",
+      "Staying inside Meta's approved-template and 24-hour messaging-window rules.",
+      "Summarizing long, multilingual threads without dropping clinical context.",
+    ],
+    shipped: [
+      "Care-manager inbox with patient assignment and two-way messaging.",
+      "Unified message + call timeline across WhatsApp, Exotel and Twilio.",
+      "On-demand AI conversation summaries for pre-call prep.",
+    ],
+    outcome: "Gave care teams a single pane for patient comms and cut pre-call prep from scrolling long histories to reading one AI summary.",
+    lang: "summarize.py", code: ["@app.post('/summarize')", "async def summarize(chat: Chat):", "    msgs = await db.fetch(chat.id)", "    out  = gemini.generate(PROMPT, msgs)", "    return { 'summary': out.text }"],
+  },
+  {
+    name: "AI Health Report", tag: "OCR / LLM workflow",
+    stack: ["Gemini", "Node.js", "AWS S3"],
+    problem: "Lab reports arrive as scanned PDFs and photos. Pulling vitals out by hand is slow and error-prone, and patients are left with a wall of numbers they can't interpret — no readable picture of their actual health risk.",
+    architecture: "An uploaded report runs through OCR, then Gemini structures the raw text into normalized vitals JSON. A rule-based scoring layer maps those vitals to clinical thresholds to flag cardiovascular, diabetes, hypertension and liver risk. Both the structured data and the original extraction are stored in AWS S3, then rendered as a plain-language health chart.",
+    challenges: [
+      "Coping with messy scan quality and inconsistent report layouts.",
+      "Normalizing varied lab units and reference ranges before scoring.",
+      "Mapping extracted vitals to clinically meaningful risk thresholds, not just raw values.",
+    ],
+    shipped: [
+      "OCR → LLM extraction pipeline that structures vitals into clean JSON.",
+      "Wellness scoring with CVD / T2D / hypertension / liver risk flags.",
+      "S3-persisted results rendered as a readable health chart.",
+    ],
+    outcome: "Cut report interpretation from manual minutes to seconds and gave patients plain-language risk flags instead of raw lab numbers.",
+    lang: "report.ts", code: ["const data  = await ocr.extract(buffer);", "const risks = scoreVitals(data); // CVD, T2D, HTN", "await s3.put(`reports/${id}.json`, data);", "return { wellness: risks.score, risks };"],
+  },
 ];
+
+/* One labeled block of a case study. `tone="accent"` highlights the outcome. */
+function CaseBlock({ label, children, tone }) {
+  const accent = tone === "accent";
+  return (
+    <div style={{ marginTop: 12 }}>
+      <span className="mono" style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", color: accent ? "#fff" : ORANGE, background: accent ? ORANGE : "transparent", border: accent ? "2px solid #000" : "none", padding: accent ? "1px 6px" : 0, display: "inline-block" }}>{label}</span>
+      <div style={{ marginTop: 5 }}>{children}</div>
+    </div>
+  );
+}
+function CaseList({ items }) {
+  return (
+    <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+      {items.map((it, i) => (
+        <li key={i} style={{ display: "flex", gap: 7, fontSize: 13, lineHeight: 1.5, marginBottom: 5 }}>
+          <span style={{ color: ORANGE, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>▸</span><span>{it}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 function ProjectsBody() {
   return (
     <div style={{ padding: 18, display: "grid", gap: 18 }}>
+      <p className="mono" style={{ margin: 0, fontSize: 12, color: "#555" }}>// featured work, as case studies — problem → stack → architecture → challenges → shipped → outcome</p>
       {PROJECTS.map((p) => (
-        <div key={p.name} className="card3d" style={{ border: "3px solid #000", background: "#fff", padding: 14, boxShadow: "5px 5px 0 #000" }}>
+        <div key={p.name} className="card3d" style={{ border: "3px solid #000", background: "#fff", padding: 16, boxShadow: "5px 5px 0 #000" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", flexWrap: "wrap", gap: 6 }}>
             <h3 className="display" style={{ fontSize: 19, margin: 0 }}>{p.name}</h3>
             <span className="mono" style={{ fontSize: 11, background: "#000", color: ORANGE, padding: "2px 7px" }}>{p.tag}</span>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
-            {p.stack.map((s) => <span key={s} className="mono" style={{ fontSize: 11, border: "2px solid #000", padding: "1px 6px", background: "#f3f4f6" }}>{s}</span>)}
-          </div>
-          <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: "10px 0 0" }}>{p.blurb}</p>
-          <CodePreview lang={p.lang} lines={p.code} />
+
+          <CaseBlock label="PROBLEM">
+            <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{p.problem}</p>
+          </CaseBlock>
+
+          <CaseBlock label="STACK">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {p.stack.map((s) => <span key={s} className="mono" style={{ fontSize: 11, border: "2px solid #000", padding: "1px 6px", background: "#f3f4f6" }}>{s}</span>)}
+            </div>
+          </CaseBlock>
+
+          <CaseBlock label="ARCHITECTURE">
+            <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{p.architecture}</p>
+            <CodePreview lang={p.lang} lines={p.code} />
+          </CaseBlock>
+
+          <CaseBlock label="CHALLENGES">
+            <CaseList items={p.challenges} />
+          </CaseBlock>
+
+          <CaseBlock label="WHAT SHIPPED">
+            <CaseList items={p.shipped} />
+          </CaseBlock>
+
+          <CaseBlock label="OUTCOME" tone="accent">
+            <p style={{ fontSize: 13.5, lineHeight: 1.55, margin: 0 }}>{p.outcome}</p>
+          </CaseBlock>
         </div>
       ))}
     </div>
